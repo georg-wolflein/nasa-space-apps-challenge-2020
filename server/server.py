@@ -35,6 +35,7 @@ def get_recommendation(liked: typing.List[str], disliked: typing.List[str]):
     liked = list(set(liked))
     disliked = list(set(disliked))
     seen = list(set(liked + disliked))
+    print(liked, disliked)
     if len(liked) == 0:
         id = df.index[random.randint(0, 30000)]
     else:
@@ -43,7 +44,6 @@ def get_recommendation(liked: typing.List[str], disliked: typing.List[str]):
                 yield adjacency_matrix[liked_id].nlargest(n + len(seen)).drop(index=seen, errors="ignore")
         id = random.choice(pd.concat(list(get_top_n())).nlargest(10).index)
     info = df.loc[id]
-    print(info)
     title = info["title"]
     summary = info["summary"]
     url = info["url"]
@@ -59,6 +59,7 @@ def get_recommendation(liked: typing.List[str], disliked: typing.List[str]):
 
 
 def get_bing_image_url_from_title(title):
+    og_title = title
     headers = {'Ocp-Apim-Subscription-Key': '9958354b605a4c2b937ff6e9b3e4592e'}
     title = title.translate(str.maketrans('', '', string.punctuation))
     title = re.sub(r'[0-9]+', '', title)
@@ -85,9 +86,15 @@ def get_bing_image_url_from_title(title):
     new_sentence = (' '.join(title2))
 
     key_num = keywords(new_sentence, words=6, scores=False, lemmatize=True)
+    key_num = key_num.replace("\n", " ")
 
     payload = {'q': key_num, 'count': 1, 'offset': 0, 'safeSearch': "moderate"}
     r = requests.get('https://api.cognitive.microsoft.com/bing/v7.0/images/search?',
                      params=payload, headers=headers)
     rJson = json.loads(r.text)
-    return rJson["value"][0]['contentUrl']
+
+    if "value" not in rJson or len(rJson["value"]) == 0:
+        print("ERR: bing rate was probably limit exceeded")
+        return "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/1200px-NASA_logo.svg.png"
+    else:
+        return rJson["value"][0]['contentUrl']
