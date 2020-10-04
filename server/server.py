@@ -94,6 +94,7 @@ def get_bing_image_url_from_title(title):
     rJson = json.loads(r.text)
 
     if "value" not in rJson or len(rJson["value"]) == 0:
+        print(rJson)
         print("ERR: bing rate was probably limit exceeded")
         return "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/1200px-NASA_logo.svg.png"
     else:
