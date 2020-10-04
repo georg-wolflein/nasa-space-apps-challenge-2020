@@ -60,7 +60,7 @@ def get_recommendation(liked: typing.List[str], disliked: typing.List[str]):
 
 def get_bing_image_url_from_title(title):
     og_title = title
-    headers = {'Ocp-Apim-Subscription-Key': '12bd098ef0324a5a896cb5eecf2dcffa'}
+    headers = {'Ocp-Apim-Subscription-Key': '47f1d77debbd4251b1ed4c47f7dbd46f'}
     title = title.translate(str.maketrans('', '', string.punctuation))
     title = re.sub(r'[0-9]+', '', title)
 
