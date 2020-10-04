@@ -30,7 +30,7 @@ The frontend is written in JavaScript using React.
 It establishes a connection to the backend server and uses the backend API to serve information.
 See the screenshot below.
 
-<img src="images/screenshot.png" alt="screenshot" style="width:300px;"/>
+<img src="images/screenshot.png" data-canonical-src="images/screenshot.png" width="300" />
 
 ## Installing and running
 
