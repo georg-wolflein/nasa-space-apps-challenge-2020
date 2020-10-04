@@ -1,8 +1,14 @@
+import string
 import typing
 import numpy as np
 import pandas as pd
 import sklearn.metrics
 import random
+import json
+import requests
+from gensim.summarization import keywords
+import nltk
+import re
 
 from fastapi import FastAPI
 
@@ -41,11 +47,47 @@ def get_recommendation(liked: typing.List[str], disliked: typing.List[str]):
     title = info["title"]
     summary = info["summary"]
     url = info["url"]
+    image = get_bing_image_url_from_title(title)
 
     return {
         "id": id,
         "title": title,
         "summary": summary,
         "url": url,
-        "image": "https://scontent.xx.fbcdn.net/v/t1.15752-0/p280x280/120844566_370002721029530_5021203831255866936_n.jpg?_nc_cat=100&_nc_sid=ae9488&_nc_ohc=3iyUnuzPWlkAX-0NKw4&_nc_ad=z-m&_nc_cid=0&_nc_ht=scontent.xx&tp=6&oh=ccb0f0b641bdb8d3ab6aa8131b78919b&oe=5F9D87CA"
+        "image": image
     }
+
+
+def get_bing_image_url_from_title(title):
+    headers = {'Ocp-Apim-Subscription-Key': '9958354b605a4c2b937ff6e9b3e4592e'}
+    title = title.translate(str.maketrans('', '', string.punctuation))
+    title = re.sub(r'[0-9]+', '', title)
+
+    tokens = nltk.word_tokenize(title)
+    tagged = nltk.pos_tag(tokens)
+
+    occurrences = tagged.count("NNP")
+
+    if(occurrences > 2):
+        for j in tagged:
+            if(j[1] != 'NNP'):
+                tagged.remove(j)
+
+    for j in tagged:
+        if(j[1] != 'NNP'):
+            tagged.remove(j)
+        if(len(j[1]) < 2):
+            tagged.remove(j)
+
+    tagged_1 = np.array(tagged)
+    title2 = tagged_1[:, 0]
+
+    new_sentence = (' '.join(title2))
+
+    key_num = keywords(new_sentence, words=6, scores=False, lemmatize=True)
+
+    payload = {'q': key_num, 'count': 1, 'offset': 0, 'safeSearch': "moderate"}
+    r = requests.get('https://api.cognitive.microsoft.com/bing/v7.0/images/search?',
+                     params=payload, headers=headers)
+    rJson = json.loads(r.text)
+    return rJson["value"][0]['contentUrl']
