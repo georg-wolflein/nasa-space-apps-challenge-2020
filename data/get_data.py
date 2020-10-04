@@ -12,7 +12,11 @@ def _get_data(response):
         id = dataset["id"]
         title = dataset["title"]
         summary = dataset["summary"]
-        yield id, title, summary
+        if "links" in dataset:
+            link = dataset["links"][0]["href"]
+        else:
+            link = "http://google.com/search?q=" + "+".join(title.split(" "))
+        yield id, title, summary, link
 
 
 def get_data(*args, **kwargs):
@@ -33,5 +37,5 @@ for i in itertools.count():
 
 data = np.array(list(itertools.chain.from_iterable(data_pages)))
 df = pd.DataFrame(data)
-df.columns = ["id", "title", "summary"]
+df.columns = ["id", "title", "summary", "url"]
 df.to_csv("data.csv")
